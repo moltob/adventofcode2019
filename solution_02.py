@@ -31,7 +31,6 @@ def run(ram: t.List[int]) -> t.List[int]:
         ram[ram[ip + 3]] = operation(ram[ram[ip + 1]], ram[ram[ip + 2]])
         ip += 4
 
-    print(f'Program state after execution: {ram!r}')
     return ram
 
 
