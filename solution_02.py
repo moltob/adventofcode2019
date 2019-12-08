@@ -42,14 +42,24 @@ def run_with(program: t.List[int], noun: int, verb: int) -> int:
     return ram[0]
 
 
+def brute_force(program: t.List[int], output: int) -> t.Tuple[int, int]:
+    for noun in range(100):
+        for verb in range(100):
+            if run_with(program, noun, verb) == output:
+                print(f'program({noun}, {verb})={output}')
+                return noun, verb
+
+    print(f'No combination found to produce {output}.')
+    return -1, -1
+
+
 def main():
     program = [int(c) for c in pathlib.Path('input_02.txt').read_text().split(',')]
 
-    # restore 1202 state:
-    program[1] = 12
-    program[2] = 2
-
     print('Result with 1202 state:', run_with(program, 12, 2))
+
+    noun, verb = brute_force(program, 19690720)
+    print('Result code:', 100 * noun + verb)
 
 
 if __name__ == '__main__':
