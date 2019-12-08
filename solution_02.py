@@ -1,5 +1,6 @@
 import enum
 import operator
+import pathlib
 import typing as t
 
 
@@ -31,3 +32,17 @@ def run(ram: t.List[int]) -> t.List[int]:
 
     print(f'Program state after execution: {ram!r}')
     return ram
+
+
+def main():
+    program = [int(c) for c in pathlib.Path('input_02.txt').read_text().split(',')]
+
+    # restore 1202 state:
+    program[1] = 12
+    program[2] = 2
+
+    run(program)
+
+
+if __name__ == '__main__':
+    main()
