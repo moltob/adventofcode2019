@@ -24,7 +24,7 @@ def run(ram: t.List[int]) -> t.List[int]:
     while (opcode := ram[ip]) != Opcode.EXIT:
         try:
             operation = OPERATIONS[opcode]
-        except ValueError:
+        except KeyError:
             print(f'Encountered unknown opcode {opcode} at position {ip}.')
             break
 
