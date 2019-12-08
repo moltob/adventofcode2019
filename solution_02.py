@@ -1,3 +1,4 @@
+import copy
 import enum
 import operator
 import pathlib
@@ -34,6 +35,13 @@ def run(ram: t.List[int]) -> t.List[int]:
     return ram
 
 
+def run_with(program: t.List[int], noun: int, verb: int) -> int:
+    ram = copy.deepcopy(program)
+    ram[1:3] = noun, verb
+    run(ram)
+    return ram[0]
+
+
 def main():
     program = [int(c) for c in pathlib.Path('input_02.txt').read_text().split(',')]
 
@@ -41,7 +49,7 @@ def main():
     program[1] = 12
     program[2] = 2
 
-    run(program)
+    print('Result with 1202 state:', run_with(program, 12, 2))
 
 
 if __name__ == '__main__':
