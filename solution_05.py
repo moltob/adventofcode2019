@@ -14,6 +14,10 @@ class Opcode(enum.IntEnum):
     MULTIPLY = 2
     INPUT = 3
     OUTPUT = 4
+    JUMP_IF_TRUE = 5
+    JUMP_IF_FALSE = 6
+    LESS_THAN = 7
+    EQUALS = 8
 
 
 @enum.unique
@@ -51,12 +55,10 @@ class Intcode:
                 break
 
             if opcode is Opcode.ADD:
-                param1, param2 = self._load_multiple(2, modes_code)
-                self._store(param1 + param2)
+                self._add(modes_code)
 
             elif opcode is Opcode.MULTIPLY:
-                param1, param2 = self._load_multiple(2, modes_code)
-                self._store(param1 * param2)
+                self._multiply(modes_code)
 
             elif opcode is Opcode.INPUT:
                 if inputs is None:
@@ -75,6 +77,14 @@ class Intcode:
                 raise NotImplementedError('unexpected opcode', opcode)
 
         return outputs
+
+    def _add(self, modes_code):
+        param1, param2 = self._load_multiple(2, modes_code)
+        self._store(param1 + param2)
+
+    def _multiply(self, modes_code):
+        param1, param2 = self._load_multiple(2, modes_code)
+        self._store(param1 * param2)
 
     def _store(self, value: int):
         self.memory[self.next_instruction()] = value
