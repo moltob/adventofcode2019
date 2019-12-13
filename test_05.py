@@ -1,6 +1,6 @@
 import logging
 
-from solution_05 import Intcode
+from intcode import Intcode
 
 logging.basicConfig(format='%(asctime)-15s %(levelname)-7s %(message)s', level=logging.INFO)
 
