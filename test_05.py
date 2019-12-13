@@ -58,15 +58,16 @@ def test__less_than_8__immediate():
     assert less_than_8(9) == [0]
 
 
-def jump__position():
+def test__jump__position():
     jump = Intcode(3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9)
     assert jump(-1) == [1]
-    assert jump(-0) == [0]
+    assert jump(0) == [0]
     assert jump(1) == [1]
 
 
-def jump__immediate():
+def test__jump__immediate():
     jump = Intcode(3, 3, 1105, -1, 9, 1101, 0, 0, 12, 4, 12, 99, 1)
     assert jump(-1) == [1]
-    assert jump(-0) == [0]
+    assert jump(0) == [0]
     assert jump(1) == [1]
+

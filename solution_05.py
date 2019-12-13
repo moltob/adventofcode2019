@@ -29,7 +29,8 @@ class Intcode:
     """An Elve Intcode computer."""
 
     def __init__(self, *instructions):
-        self.memory = list(instructions)
+        self.program = instructions
+        self.memory = None
         self.ip = 0
 
     @classmethod
@@ -49,6 +50,7 @@ class Intcode:
 
     def run(self, inputs: t.Iterable[int] = None) -> t.List[int]:
         _logger.info('Starting program execution.')
+        self.memory = list(self.program)
         self.ip = 0
         outputs = []
 
