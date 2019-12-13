@@ -155,19 +155,9 @@ class Intcode:
 
 
 def main():
-    logging.basicConfig(format='%(asctime)-15s %(levelname)-7s %(message)s', level=logging.INFO)
-
-    try:
-        outputs = Intcode.from_file('input_05.txt').run(inputs=[1])
-        print(outputs)
-    except Exception as ex:
-        _logger.error(ex)
-
-    try:
-        outputs = Intcode.from_file('input_05.txt').run(inputs=[5])
-        print(outputs)
-    except Exception as ex:
-        _logger.error(ex)
+    diagnostic = Intcode.from_file('input_05.txt')
+    print('air conditioner:', diagnostic(1))
+    print('thermal radiator controller:', diagnostic(5))
 
 
 if __name__ == '__main__':
