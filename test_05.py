@@ -83,3 +83,8 @@ def test__big_compare_8():
     assert equal_8(9) == [1001]
     assert equal_8(10) == [1001]
     assert equal_8(10000) == [1001]
+
+
+def test__part_2():
+    output = Intcode.from_file('input_05.txt').run([5])
+    assert output == [11956381]
