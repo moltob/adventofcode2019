@@ -10,6 +10,8 @@ class Opcode(enum.IntEnum):
     EXIT = 99
     ADD = 1
     MULTIPLY = 2
+    INPUT = 3
+    OUTPUT = 4
 
 
 @enum.unique
@@ -40,12 +42,20 @@ class Intcode:
                 break
 
             if opcode is Opcode.ADD:
-                op1, op2 = self._load_multiple(2, modes_code)
-                self._store(op1 + op2)
+                param1, param2 = self._load_multiple(2, modes_code)
+                self._store(param1 + param2)
 
             elif opcode is Opcode.MULTIPLY:
-                op1, op2 = self._load_multiple(2, modes_code)
-                self._store(op1 * op2)
+                param1, param2 = self._load_multiple(2, modes_code)
+                self._store(param1 * param2)
+
+            elif opcode is Opcode.INPUT:
+                value = int(input('Please enter a value: '))
+                self._store(value)
+
+            elif opcode is Opcode.OUTPUT:
+                value = self._load(ParameterMode.POSITION)
+                print(value)
 
             else:
                 raise NotImplementedError('unexpected opcode', opcode)

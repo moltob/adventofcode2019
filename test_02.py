@@ -1,7 +1,7 @@
 from solution_02 import run
 
 
-def test_run():
+def test__run():
     assert run([1, 0, 0, 0, 99]) == [2, 0, 0, 0, 99]
     assert run([2, 3, 0, 3, 99]) == [2, 3, 0, 6, 99]
     assert run([2, 4, 4, 5, 99, 0]) == [2, 4, 4, 5, 99, 9801]
