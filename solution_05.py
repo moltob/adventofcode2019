@@ -71,7 +71,7 @@ class Intcode:
                 self._store(value)
 
             elif opcode is Opcode.OUTPUT:
-                value = self._load(ParameterMode.POSITION)
+                value = self._load(ParameterMode(modes_code))
                 if outputs is None:
                     print(value)
                 else:
