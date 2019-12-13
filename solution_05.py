@@ -28,14 +28,14 @@ class ParameterMode(enum.IntEnum):
 class Intcode:
     """An Elve Intcode computer."""
 
-    def __init__(self, program: t.List[int]):
-        self.memory = list(program)
+    def __init__(self, *instructions):
+        self.memory = list(instructions)
         self.ip = 0
 
     @classmethod
     def from_file(cls, path) -> 'Intcode':
         _logger.debug(f'Loading program from file "{path}".')
-        return cls([int(c) for c in pathlib.Path(path).read_text().split(',')])
+        return cls(*[int(c) for c in pathlib.Path(path).read_text().split(',')])
 
     def next_instruction(self):
         instruction = self.memory[self.ip]

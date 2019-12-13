@@ -6,7 +6,7 @@ logging.basicConfig(format='%(asctime)-15s %(levelname)-7s %(message)s', level=l
 
 
 def memory_after_run(program):
-    computer = Intcode(program)
+    computer = Intcode(*program)
     computer()
     return computer.memory
 
@@ -29,14 +29,14 @@ def test__part_1():
 
 
 def test__equal_8__position():
-    compare_to_8 = Intcode([3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8])
+    compare_to_8 = Intcode(3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8)
     assert compare_to_8(7) == [0]
     assert compare_to_8(9) == [0]
     assert compare_to_8(8) == [1]
 
 
 def test__less_than_8__position():
-    less_than_8 = Intcode([3, 9, 7, 9, 10, 9, 4, 9, 99, -1, 8])
+    less_than_8 = Intcode(3, 9, 7, 9, 10, 9, 4, 9, 99, -1, 8)
     assert less_than_8(6) == [1]
     assert less_than_8(7) == [1]
     assert less_than_8(8) == [0]
@@ -44,15 +44,29 @@ def test__less_than_8__position():
 
 
 def test__equal_8__immediate():
-    compare_to_8 = Intcode([3, 3, 1108, -1, 8, 3, 4, 3, 99])
+    compare_to_8 = Intcode(3, 3, 1108, -1, 8, 3, 4, 3, 99)
     assert compare_to_8(7) == [0]
     assert compare_to_8(9) == [0]
     assert compare_to_8(8) == [1]
 
 
 def test__less_than_8__immediate():
-    less_than_8 = Intcode([3, 3, 1107, -1, 8, 3, 4, 3, 99])
+    less_than_8 = Intcode(3, 3, 1107, -1, 8, 3, 4, 3, 99)
     assert less_than_8(6) == [1]
     assert less_than_8(7) == [1]
     assert less_than_8(8) == [0]
     assert less_than_8(9) == [0]
+
+
+def jump__position():
+    jump = Intcode(3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9)
+    assert jump(-1) == [1]
+    assert jump(-0) == [0]
+    assert jump(1) == [1]
+
+
+def jump__immediate():
+    jump = Intcode(3, 3, 1105, -1, 9, 1101, 0, 0, 12, 4, 12, 99, 1)
+    assert jump(-1) == [1]
+    assert jump(-0) == [0]
+    assert jump(1) == [1]
