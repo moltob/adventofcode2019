@@ -163,6 +163,12 @@ def main():
     except Exception as ex:
         _logger.error(ex)
 
+    try:
+        outputs = Intcode.from_file('input_05.txt').run(inputs=[5])
+        print(outputs)
+    except Exception as ex:
+        _logger.error(ex)
+
 
 if __name__ == '__main__':
     main()
