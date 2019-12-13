@@ -12,26 +12,71 @@ class Opcode(enum.IntEnum):
     MULTIPLY = 2
 
 
-OPERATIONS = {
-    Opcode.ADD.value: operator.add,
-    Opcode.MULTIPLY.value: operator.mul,
-}
+@enum.unique
+class ParameterMode(enum.IntEnum):
+    POSITION = 0
+    IMMEDIATE = 1
 
 
-def run(ram: t.List[int]) -> t.List[int]:
-    ip = 0
+class Intcode:
+    """An Elve Intcode computer."""
 
-    while (opcode := ram[ip]) != Opcode.EXIT:
-        try:
-            operation = OPERATIONS[opcode]
-        except KeyError:
-            print(f'Encountered unknown opcode {opcode} at position {ip}.')
-            break
+    def __init__(self, program: t.List[int]):
+        self.memory = list(program)
+        self.ip = 0
 
-        ram[ram[ip + 3]] = operation(ram[ram[ip + 1]], ram[ram[ip + 2]])
-        ip += 4
+    def next_instruction(self):
+        instruction = self.memory[self.ip]
+        self.ip += 1
+        return instruction
 
-    return ram
+    def run(self) -> 'Intcode':
+        while True:
+            instruction = self.next_instruction()
+            opcode = Opcode(instruction % 100)
+            modes_code = instruction // 100
+
+            if opcode is Opcode.EXIT:
+                break
+
+            if opcode is Opcode.ADD:
+                op1, op2 = self._load_multiple(2, modes_code)
+                self._store(op1 + op2)
+
+            elif opcode is Opcode.MULTIPLY:
+                op1, op2 = self._load_multiple(2, modes_code)
+                self._store(op1 * op2)
+
+            else:
+                raise NotImplementedError('unexpected opcode', opcode)
+
+        # to simplify test assertions:
+        return self
+
+    def _store(self, value: int):
+        self.memory[self.next_instruction()] = value
+
+    def _load_multiple(self, number: int, modes_code: int) -> t.List[int]:
+        values = []
+
+        while number:
+            mode = ParameterMode(modes_code % 10)
+            modes_code //= 10
+            number -= 1
+            values.append(self._load(mode))
+
+        return values
+
+    def _load(self, mode: ParameterMode) -> int:
+        value = self.next_instruction()
+
+        if mode is ParameterMode.IMMEDIATE:
+            return value
+
+        if mode is ParameterMode.POSITION:
+            return self.memory[value]
+
+        raise NotImplementedError('unknown parameter mode', mode)
 
 
 def main():
