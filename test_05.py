@@ -11,3 +11,4 @@ def test__run_from_02():
 
 def test__run():
     assert Intcode([1002, 4, 3, 4, 33]).run().memory[4] == 99
+    assert Intcode([1101, 100, -1, 4, 0]).run().memory[4] == 99
