@@ -1,6 +1,8 @@
+import collections
 import copy
 import enum
 import operator
+import os
 import pathlib
 import typing as t
 
@@ -27,12 +29,23 @@ class Intcode:
         self.memory = list(program)
         self.ip = 0
 
+    @classmethod
+    def from_file(cls, path) -> 'Intcode':
+        return cls([int(c) for c in pathlib.Path(path).read_text().split(',')])
+
     def next_instruction(self):
         instruction = self.memory[self.ip]
         self.ip += 1
         return instruction
 
-    def run(self) -> 'Intcode':
+    def run(
+            self,
+            *,
+            inputs: t.Optional[t.List[int]] = None,
+            outputs: t.Optional[t.List[int]] = None
+    ) -> 'Intcode':
+        inputp = 0
+
         while True:
             instruction = self.next_instruction()
             opcode = Opcode(instruction % 100)
@@ -50,12 +63,19 @@ class Intcode:
                 self._store(param1 * param2)
 
             elif opcode is Opcode.INPUT:
-                value = int(input('Please enter a value: '))
+                if inputs is None:
+                    value = int(input('Please enter a value: '))
+                else:
+                    value = inputs[inputp]
+                    inputp += 1
                 self._store(value)
 
             elif opcode is Opcode.OUTPUT:
                 value = self._load(ParameterMode.POSITION)
-                print(value)
+                if outputs is None:
+                    print(value)
+                else:
+                    outputs.append(value)
 
             else:
                 raise NotImplementedError('unexpected opcode', opcode)
@@ -90,7 +110,9 @@ class Intcode:
 
 
 def main():
-    pass
+    outputs = []
+    Intcode.from_file('input_05.txt').run(inputs=[1], outputs=outputs)
+    print(outputs)
 
 
 if __name__ == '__main__':
