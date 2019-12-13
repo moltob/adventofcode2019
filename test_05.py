@@ -1,9 +1,13 @@
+import logging
+
 from solution_05 import Intcode
+
+logging.basicConfig(format='%(asctime)-15s %(levelname)-7s %(message)s', level=logging.INFO)
 
 
 def memory_after_run(program):
     computer = Intcode(program)
-    computer.run()
+    computer()
     return computer.memory
 
 
@@ -20,5 +24,35 @@ def test__run():
 
 
 def test__part_1():
-    output = Intcode.from_file('input_05.txt').run(inputs=[1])
+    output = Intcode.from_file('input_05.txt').run([1])
     assert output == [0, 0, 0, 0, 0, 0, 0, 0, 0, 5821753]
+
+
+def test__equal_8__position():
+    compare_to_8 = Intcode([3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8])
+    assert compare_to_8(7) == [0]
+    assert compare_to_8(9) == [0]
+    assert compare_to_8(8) == [1]
+
+
+def test__less_than_8__position():
+    less_than_8 = Intcode([3, 9, 7, 9, 10, 9, 4, 9, 99, -1, 8])
+    assert less_than_8(6) == [1]
+    assert less_than_8(7) == [1]
+    assert less_than_8(8) == [0]
+    assert less_than_8(9) == [0]
+
+
+def test__equal_8__immediate():
+    compare_to_8 = Intcode([3, 3, 1108, -1, 8, 3, 4, 3, 99])
+    assert compare_to_8(7) == [0]
+    assert compare_to_8(9) == [0]
+    assert compare_to_8(8) == [1]
+
+
+def test__less_than_8__immediate():
+    less_than_8 = Intcode([3, 3, 1107, -1, 8, 3, 4, 3, 99])
+    assert less_than_8(6) == [1]
+    assert less_than_8(7) == [1]
+    assert less_than_8(8) == [0]
+    assert less_than_8(9) == [0]
