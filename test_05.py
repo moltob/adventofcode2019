@@ -17,3 +17,8 @@ def test__run_from_02():
 def test__run():
     assert memory_after_run([1002, 4, 3, 4, 33])[4] == 99
     assert memory_after_run([1101, 100, -1, 4, 0])[4] == 99
+
+
+def test__part_1():
+    output = Intcode.from_file('input_05.txt').run(inputs=[1])
+    assert output == [0, 0, 0, 0, 0, 0, 0, 0, 0, 5821753]
