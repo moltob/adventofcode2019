@@ -38,13 +38,9 @@ class Intcode:
         self.ip += 1
         return instruction
 
-    def run(
-            self,
-            *,
-            inputs: t.Optional[t.List[int]] = None,
-            outputs: t.Optional[t.List[int]] = None
-    ) -> 'Intcode':
+    def run(self, *, inputs: t.Optional[t.List[int]] = None) -> t.List[int]:
         inputp = 0
+        outputs = []
 
         while True:
             instruction = self.next_instruction()
@@ -72,16 +68,13 @@ class Intcode:
 
             elif opcode is Opcode.OUTPUT:
                 value = self._load(ParameterMode(modes_code))
-                if outputs is None:
-                    print(value)
-                else:
-                    outputs.append(value)
+                print(value)
+                outputs.append(value)
 
             else:
                 raise NotImplementedError('unexpected opcode', opcode)
 
-        # to simplify test assertions:
-        return self
+        return outputs
 
     def _store(self, value: int):
         self.memory[self.next_instruction()] = value
@@ -111,8 +104,7 @@ class Intcode:
 
 def main():
     outputs = []
-    Intcode.from_file('input_05.txt').run(inputs=[1], outputs=outputs)
-    print(outputs)
+    Intcode.from_file('input_05.txt').run(inputs=[1])
 
 
 if __name__ == '__main__':
