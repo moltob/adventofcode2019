@@ -15,3 +15,8 @@ def test__16_digits_output():
 def test__large_output():
     outputs = Intcode(104, 1125899906842624, 99)()
     assert outputs == [1125899906842624]
+
+
+def test__part_1():
+    boost = Intcode.from_file('input_09.txt')
+    assert boost(1) == [2932210790]
