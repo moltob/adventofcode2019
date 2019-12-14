@@ -24,6 +24,10 @@ class ParameterMode(enum.IntEnum):
     IMMEDIATE = 1
     RELATIVE = 2
 
+    @classmethod
+    def from_modes(cls, modes, pos):
+        return cls(modes // pow(10, pos) % 10)
+
 
 class TraceItem:
     def __init__(self, address, relative_base):
@@ -127,7 +131,7 @@ class Intcode:
                 elif opcode is Opcode.INPUT:
                     self._trace_line.mnemonic = 'INP'
                     value = next(input_iter)
-                    self._store(value)
+                    self._store(value, ParameterMode.from_modes(parameter_modes, 0))
 
                 elif opcode is Opcode.OUTPUT:
                     self._trace_line.mnemonic = 'OUT'
@@ -168,20 +172,20 @@ class Intcode:
 
     def _add(self, parameter_modes):
         param1, param2 = self._load_multiple(2, parameter_modes)
-        self._store(param1 + param2)
+        self._store(param1 + param2, ParameterMode.from_modes(parameter_modes, 2))
 
     def _multiply(self, parameter_modes):
         param1, param2 = self._load_multiple(2, parameter_modes)
-        self._store(param1 * param2)
+        self._store(param1 * param2, ParameterMode.from_modes(parameter_modes, 2))
 
-    def _store(self, value: int, mode: ParameterMode = ParameterMode.POSITION):
+    def _store(self, value: int, mode: ParameterMode):
         address = self.next_instruction()
 
         if mode is ParameterMode.POSITION:
             entry = f'({address})={value}'
         elif mode is ParameterMode.RELATIVE:
             entry = f'/{address}/={value}'
-            address = self.relative_base + value
+            address = self.relative_base + address
         else:
             raise NotImplementedError('unsupported storage mode', mode)
 
@@ -224,12 +228,12 @@ class Intcode:
     def _less_than(self, parameter_modes):
         param1, param2 = self._load_multiple(2, parameter_modes)
         value = 1 if param1 < param2 else 0
-        self._store(value)
+        self._store(value, ParameterMode.from_modes(parameter_modes, 2))
 
     def _equals(self, parameter_modes):
         param1, param2 = self._load_multiple(2, parameter_modes)
         value = 1 if param1 == param2 else 0
-        self._store(value)
+        self._store(value, ParameterMode.from_modes(parameter_modes, 2))
 
     def _adjust_relative_base(self, parameter_modes):
         adjustment = self._load(ParameterMode(parameter_modes))
