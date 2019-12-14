@@ -26,8 +26,9 @@ class ParameterMode(enum.IntEnum):
 
 
 class TraceItem:
-    def __init__(self, address):
+    def __init__(self, address, relative_base):
         self.address: int = address
+        self.relative_base = relative_base
         self.opcode: Opcode = Opcode.EXIT
         self.parameter_mode = 0
         self.mnemonic: str = ''
@@ -37,6 +38,7 @@ class TraceItem:
     def __str__(self):
         elements = [
             f'{self.address:05}',
+            f'/{self.relative_base:08}/',
             f'{self.parameter_mode:03}|{self.opcode.value:02}',
             self.mnemonic,
             ','.join(self.arguments)
@@ -72,11 +74,11 @@ class Intcode:
         return [self._memory[i] for i in range(max_index + 1)]
 
     def print_trace(self):
-        print('======================================')
-        print('ADDR  INSTR  COMMAND')
-        print('======================================')
+        print('=============================================')
+        print('ADDR  RELBASE    INSTR  COMMAND')
+        print('=============================================')
         print('\n'.join(self.trace))
-        print('======================================')
+        print('=============================================')
 
     def next_instruction(self):
         instruction = self._memory[self.ip]
@@ -100,7 +102,7 @@ class Intcode:
 
         opcode = None
         while opcode is not Opcode.EXIT:
-            self._trace_line = TraceItem(self.ip)
+            self._trace_line = TraceItem(self.ip, self.relative_base)
 
             instruction = self.next_instruction()
 
@@ -172,9 +174,18 @@ class Intcode:
         param1, param2 = self._load_multiple(2, parameter_modes)
         self._store(param1 * param2)
 
-    def _store(self, value: int):
+    def _store(self, value: int, mode: ParameterMode = ParameterMode.POSITION):
         address = self.next_instruction()
-        self._trace_line.result = f'({address})'
+
+        if mode is ParameterMode.POSITION:
+            entry = f'({address})={value}'
+        elif mode is ParameterMode.RELATIVE:
+            entry = f'/{address}/={value}'
+            address = self.relative_base + value
+        else:
+            raise NotImplementedError('unsupported storage mode', mode)
+
+        self._trace_line.result = entry
         self._memory[address] = value
 
     def _load_multiple(self, number: int, parameter_modes: int) -> t.List[int]:
