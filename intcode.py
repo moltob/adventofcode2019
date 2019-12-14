@@ -35,9 +35,9 @@ class TraceItem:
         elements = [
             f'{self.address:05}',
             f'{self.parameter_mode:03}|{self.opcode.value:02}',
-            self.mnemonic
+            self.mnemonic,
+            ','.join(self.arguments)
         ]
-        elements.extend(self.arguments)
         if self.result:
             elements.append(f'-->')
             elements.append(self.result)
