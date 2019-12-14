@@ -1,10 +1,6 @@
 import enum
-import io
-import logging
 import pathlib
 import typing as t
-
-_logger = logging.getLogger(__name__)
 
 
 @enum.unique
@@ -28,14 +24,19 @@ class ParameterMode(enum.IntEnum):
 
 class TraceItem:
     def __init__(self, address):
-        self.address = address
-        self.instruction = None
-        self.mnemonic = None
-        self.arguments = []
-        self.result = None
+        self.address: int = address
+        self.opcode: Opcode = Opcode.EXIT
+        self.parameter_mode = 0
+        self.mnemonic: str = ''
+        self.arguments: t.List[str] = []
+        self.result: t.Optional[str] = None
 
     def __str__(self):
-        elements = [f'{self.address:05}', self.mnemonic]
+        elements = [
+            f'{self.address:05}',
+            f'{self.parameter_mode:03}|{self.opcode.value:02}',
+            self.mnemonic
+        ]
         elements.extend(self.arguments)
         if self.result:
             elements.append(f'-->')
@@ -47,16 +48,23 @@ class TraceItem:
 class Intcode:
     """An Elve Intcode computer."""
 
-    def __init__(self, *instructions, trace_execution=False):
+    def __init__(self, *instructions):
         self.program = instructions
         self.memory = None
         self.ip = 0
-        self.trace = None
-        self.trace_execution=trace_execution
+        self.trace = []
+        self._trace_line = None
 
     @classmethod
     def from_file(cls, path) -> 'Intcode':
         return cls(*[int(c) for c in pathlib.Path(path).read_text().split(',')])
+
+    def print_trace(self):
+        print('======================================')
+        print('ADDR  INSTR  COMMAND')
+        print('======================================')
+        print('\n'.join(self.trace))
+        print('======================================')
 
     def next_instruction(self):
         instruction = self.memory[self.ip]
@@ -70,62 +78,63 @@ class Intcode:
     def run(self, inputs: t.Iterable[int] = None) -> t.List[int]:
         self.memory = list(self.program)
         self.ip = 0
+        self.trace = []
 
         input_iter = iter(inputs) if inputs else None
         outputs = []
 
         opcode = None
         while opcode is not Opcode.EXIT:
-            self.trace = TraceItem(self.ip)
+            self._trace_line = TraceItem(self.ip)
 
             instruction = self.next_instruction()
-            self.trace.instruction = instruction
 
             opcode = Opcode(instruction % 100)
             parameter_modes = instruction // 100
+            self._trace_line.opcode = opcode
+            self._trace_line.parameter_mode = parameter_modes
 
             if opcode is Opcode.EXIT:
-                self.trace.mnemonic = 'EXT'
+                self._trace_line.mnemonic = 'EXT'
 
             elif opcode is Opcode.ADD:
-                self.trace.mnemonic = 'ADD'
+                self._trace_line.mnemonic = 'ADD'
                 self._add(parameter_modes)
 
             elif opcode is Opcode.MULTIPLY:
-                self.trace.mnemonic = 'MUL'
+                self._trace_line.mnemonic = 'MUL'
                 self._multiply(parameter_modes)
 
             elif opcode is Opcode.INPUT:
-                self.trace.mnemonic = 'INP'
+                self._trace_line.mnemonic = 'INP'
                 value = next(input_iter)
                 self._store(value)
 
             elif opcode is Opcode.OUTPUT:
-                self.trace.mnemonic = 'OUT'
+                self._trace_line.mnemonic = 'OUT'
                 value = self._load(ParameterMode(parameter_modes))
                 outputs.append(value)
 
             elif opcode is Opcode.JUMP_IF_TRUE:
-                self.trace.mnemonic = 'JNZ'
+                self._trace_line.mnemonic = 'JNZ'
                 self._jump_if(True, parameter_modes)
 
             elif opcode is Opcode.JUMP_IF_FALSE:
-                self.trace.mnemonic = 'JZR'
+                self._trace_line.mnemonic = 'JZR'
                 self._jump_if(False, parameter_modes)
 
             elif opcode is Opcode.LESS_THAN:
-                self.trace.mnemonic = 'LSS'
+                self._trace_line.mnemonic = 'LSS'
                 self._less_than(parameter_modes)
 
             elif opcode is Opcode.EQUALS:
-                self.trace.mnemonic = 'EQU'
+                self._trace_line.mnemonic = 'EQU'
                 self._equals(parameter_modes)
 
             else:
                 raise NotImplementedError('unexpected opcode', opcode)
 
-            if self.trace_execution:
-                _logger.debug(self.trace)
+            self.trace.append(str(self._trace_line))
 
         return outputs
 
@@ -139,7 +148,7 @@ class Intcode:
 
     def _store(self, value: int):
         address = self.next_instruction()
-        self.trace.result = f'({address})'
+        self._trace_line.result = f'({address})'
         self.memory[address] = value
 
     def _load_multiple(self, number: int, parameter_modes: int) -> t.List[int]:
@@ -157,11 +166,11 @@ class Intcode:
         value = self.next_instruction()
 
         if mode is ParameterMode.IMMEDIATE:
-            self.trace.arguments.append(str(value))
+            self._trace_line.arguments.append(str(value))
             return value
 
         if mode is ParameterMode.POSITION:
-            self.trace.arguments.append(f'({value})')
+            self._trace_line.arguments.append(f'({value})')
             return self.memory[value]
 
         raise NotImplementedError('unknown parameter mode', mode)
