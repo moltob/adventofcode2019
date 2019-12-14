@@ -14,12 +14,14 @@ class Opcode(enum.IntEnum):
     JUMP_IF_FALSE = 6
     LESS_THAN = 7
     EQUALS = 8
+    ADJUST_RELATIVE_BASE = 9
 
 
 @enum.unique
 class ParameterMode(enum.IntEnum):
     POSITION = 0
     IMMEDIATE = 1
+    RELATIVE = 2
 
 
 class TraceItem:
@@ -52,6 +54,7 @@ class Intcode:
         self.program = instructions
         self.memory = None
         self.ip = 0
+        self.relative_base = 0
         self.trace = []
         self._trace_line = None
 
@@ -78,6 +81,7 @@ class Intcode:
     def run(self, inputs: t.Iterable[int] = None) -> t.List[int]:
         self.memory = list(self.program)
         self.ip = 0
+        self.relative_base = 0
         self.trace = []
 
         input_iter = iter(inputs) if inputs else None
@@ -131,6 +135,10 @@ class Intcode:
                 self._trace_line.mnemonic = 'EQU'
                 self._equals(parameter_modes)
 
+            elif opcode is Opcode.ADJUST_RELATIVE_BASE:
+                self._trace_line.mnemonic = 'ARB'
+                self._adjust_relative_base(parameter_modes)
+
             else:
                 raise NotImplementedError('unexpected opcode', opcode)
 
@@ -173,6 +181,10 @@ class Intcode:
             self._trace_line.arguments.append(f'({value})')
             return self.memory[value]
 
+        if mode is ParameterMode.RELATIVE:
+            self._trace_line.arguments.append(f'/{value}/')
+            return self.memory[self.relative_base + value]
+
         raise NotImplementedError('unknown parameter mode', mode)
 
     def _jump_if(self, condition: bool, parameter_modes: int):
@@ -189,3 +201,7 @@ class Intcode:
         param1, param2 = self._load_multiple(2, parameter_modes)
         value = 1 if param1 == param2 else 0
         self._store(value)
+
+    def _adjust_relative_base(self, parameter_modes):
+        adjustment = self._load(ParameterMode(parameter_modes))
+        self.relative_base += adjustment
