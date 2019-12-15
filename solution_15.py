@@ -95,24 +95,22 @@ def find_shortest_path_length(commands, droid):
         controller.control(droid, commands)
 
     except HitWallError:
-        print(f'WALL at {controller.position}')
         positions[controller.position] = '#'
         return math.inf
 
     except FoundGoal:
-        print(f'FOUND at {controller.position}')
+        print(f'*** FOUND at {controller.position} ***')
         positions[controller.position] = '*'
         return len(controller.path)
 
     except StopIteration:
         # ran out of commands, try next direction from here:
-        print(f'FREE at {controller.position}')
         positions[controller.position] = '.'
 
         distance = math.inf
         for command in (Command.NORTH, Command.EAST, Command.SOUTH, Command.WEST):
             next_position = controller.position_after_move(command)
-            if next_position not in positions:
+            if next_position not in controller.path:
                 positions[next_position] = '?'
                 x_min = min(next_position.x, x_min)
                 x_max = max(next_position.x, x_max)
