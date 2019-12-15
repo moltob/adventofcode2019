@@ -64,6 +64,7 @@ class Intcode:
         self.relative_base = 0
         self.trace = []
         self._trace_line = None
+        self.stack_trace_on_error = True
 
     @classmethod
     def from_file(cls, path) -> 'Intcode':
@@ -168,9 +169,10 @@ class Intcode:
 
                 self.trace.append(str(self._trace_line))
             except:
-                print(f'Program execution failed:')
-                self.print_trace()
-                print(f'{self._trace_line} <-- FAILED')
+                if self.stack_trace_on_error:
+                    print(f'Program execution failed:')
+                    self.print_trace()
+                    print(f'{self._trace_line} <-- FAILED')
                 raise
 
         return outputs
