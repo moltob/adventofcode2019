@@ -50,14 +50,27 @@ class Player:
         self.score = 0
         self.game = None
 
+        self.reset()
+
+    def reset(self):
         self._last_output = [0, 0, 0]
         self._last_output_index = 0
+        self.width = 0
+        self.height = 0
+        self.game_running = False
+        self.paddle_position = None
+        self.ball_position = None
 
     @property
     def joystick(self):
         while True:
-            print('Input requested.')
-            yield JoystickPosition.NEUTRAL
+            difference = self.paddle_position.x - self.ball_position.x
+            if difference > 0:
+                yield JoystickPosition.LEFT
+            elif difference < 0:
+                yield JoystickPosition.RIGHT
+            else:
+                yield JoystickPosition.NEUTRAL
 
     def on_output(self, value):
         self._last_output[self._last_output_index] = value
@@ -69,18 +82,38 @@ class Player:
 
     def play(self, game: Intcode):
         self.game = game
-        self._last_output_index = 0
+        self.reset()
+
         game.run(self.joystick, self.on_output)
 
     def _on_screen_instruction(self, x, y, code):
         if (x, y) == (-1, 0):
             self.score = code
             print(f'New score: {self.score}')
+
+            if not self.game_running:
+                self._on_game_started()
         else:
             self._on_tile(Vector(x, y), TileId(code))
 
     def _on_tile(self, vector, tile_id):
-        print(vector, tile_id.name)
+        self.width = max(self.width, vector.x)
+        self.height = max(self.height, vector.y)
+
+        if tile_id is TileId.BALL:
+            print('Ball: ', vector)
+            self.ball_position = vector
+        elif tile_id is TileId.HPADDLE:
+            # print('Paddle: ', vector)
+            self.paddle_position = vector
+
+    def _on_game_started(self):
+        self.width += 1
+        self.height += 1
+
+        print(f'Game started with screen size {self.width} x {self.height}.')
+
+        self.game_running = True
 
 
 def main():
