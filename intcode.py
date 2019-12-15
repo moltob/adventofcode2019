@@ -58,7 +58,7 @@ class Intcode:
     """An Elve Intcode computer."""
 
     def __init__(self, *instructions):
-        self.program = instructions
+        self.program = list(instructions)
         self._memory = collections.defaultdict(int)
         self.ip = 0
         self.relative_base = 0
@@ -93,7 +93,10 @@ class Intcode:
     def __call__(self, *args, **kwargs):
         return self.run(inputs=args)
 
-    def run(self, inputs: t.Iterable[int] = None) -> t.List[int]:
+    def run(
+            self, inputs: t.Iterable[int] = None,
+            on_output: t.Callable[[int], None] = None
+    ) -> t.List[int]:
         self._memory.clear()
         self._memory.update({i: v for i, v in enumerate(self.program)})
 
@@ -137,6 +140,8 @@ class Intcode:
                     self._trace_line.mnemonic = 'OUT'
                     value = self._load(ParameterMode(parameter_modes))
                     outputs.append(value)
+                    if on_output:
+                        on_output(value)
 
                 elif opcode is Opcode.JUMP_IF_TRUE:
                     self._trace_line.mnemonic = 'JNZ'
