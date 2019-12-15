@@ -140,7 +140,7 @@ def print_map():
 def main():
     droid = Intcode.from_file('input_15.txt')
     droid.stack_trace_on_error = False
-    print('Shortest path length:', find_shortest_path_length([], droid))
+    print('Shortest path length:', find_shortest_path_length([], droid) - 1)
 
 
 if __name__ == '__main__':
